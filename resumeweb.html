@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Interactive Resume" />
+  <title>Interactive Resume</title>
+
+  <style>
+    :root{
+      --bg: #0b1020;
+      --card: rgba(255,255,255,0.08);
+      --card2: rgba(255,255,255,0.12);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+      --border: rgba(255,255,255,0.14);
+      --accent: #7c3aed; /* purple */
+      --accent2:#22c55e; /* green */
+      --shadow: 0 25px 70px rgba(0,0,0,.55);
+      --radius: 18px;
+      --max: 1060px;
+    }
+    [data-theme="light"]{
+      --bg: #f6f7fb;
+      --card: rgba(0,0,0,0.04);
+      --card2: rgba(0,0,0,0.06);
+      --text: rgba(0,0,0,0.88);
+      --muted: rgba(0,0,0,0.60);
+      --border: rgba(0,0,0,0.12);
+      --shadow: 0 20px 50px rgba(0,0,0,.12);
+    }
+
+    *{ box-sizing:border-box; }
+    html{ scroll-behavior:smooth; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(1200px 600px at 20% 10%, rgba(124,58,237,.30), transparent 55%),
+        radial-gradient(1000px 500px at 90% 20%, rgba(34,197,94,.22), transparent 55%),
+        var(--bg);
+      color: var(--text);
+    }
+    a{ color:inherit; text-decoration:none; }
+    .wrap{ max-width: var(--max); margin: 0 auto; padding: 18px; }
+
+    /* Top bar */
+    .topbar{
+      position: sticky; top:0; z-index: 50;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(0,0,0,.18), rgba(0,0,0,0));
+      border-bottom: 1px solid transparent;
+    }
+    [data-theme="light"] .topbar{
+      background: linear-gradient(to bottom, rgba(255,255,255,.80), rgba(255,255,255,0));
+    }
+    .nav{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding: 10px 0;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight: 800;
+      letter-spacing: .2px;
+    }
+    .dot{
+      width: 12px; height: 12px; border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 0 6px rgba(124,58,237,.12);
+    }
+    .links{
+      display:flex; gap: 14px; flex-wrap: wrap; justify-content:flex-end;
+      font-size: 14px; color: var(--muted);
+    }
+    .links a{
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+    }
+    .links a:hover{
+      border-color: var(--border);
+      background: var(--card);
+      color: var(--text);
+    }
+    .actions{ display:flex; align-items:center; gap: 10px; }
+    .btn{
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform .12s ease, filter .12s ease, background .12s ease;
+      display:inline-flex; align-items:center; gap:10px;
+      user-select:none;
+    }
+    .btn:hover{ transform: translateY(-1px); filter: brightness(1.05); background: var(--card2); }
+    .btn.primary{
+      border-color: rgba(124,58,237,.45);
+      background: linear-gradient(135deg, rgba(124,58,237,.35), rgba(34,197,94,.22));
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: 1fr; }
+      .links{ display:none; }
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+    .hero h1{
+      margin: 4px 0 6px;
+      font-size: clamp(28px, 4vw, 44px);
+      letter-spacing: -0.3px;
+    }
+    .hero p{ margin: 0 0 10px; color: var(--muted); line-height: 1.5; }
+    .row{ display:flex; flex-wrap:wrap; gap:10px; margin-top: 12px; }
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+    .chip{
+      font-size: 13px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor:pointer;
+      transition: background .12s ease, transform .12s ease, color .12s ease;
+    }
+    .chip:hover{ transform: translateY(-1px); background: var(--card2); color: var(--text); }
+    .chip.active{
+      background: linear-gradient(135deg, rgba(124,58,237,.28), rgba(34,197,94,.18));
+      color: var(--text);
+      border-color: rgba(124,58,237,.35);
+    }
+
+    .section{
+      margin-top: 18px;
+    }
+    .section h2{
+      margin: 0 0 10px;
+      font-size: 18px;
+      letter-spacing: .2px;
+    }
+    .two{
+      display:grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    }
+    @media (max-width: 650px){ .two{ grid-template-columns: 1fr; } }
+
+    .item{
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+    }
+    [data-theme="light"] .item{ background: rgba(0,0,0,0.02); }
+
+    .meta{ color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .kpi{ display:flex; flex-wrap:wrap; gap:8px; margin-top: 10px; }
+    .tag{
+      font-size: 12px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: transparent;
+    }
+    .projGrid{
+      display:grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    }
+    @media (max-width: 900px){ .projGrid{ grid-template-columns: 1fr; } }
+
+    .proj{
+      cursor:pointer;
+      position:relative;
+      overflow:hidden;
+    }
+    .proj:hover{ background: var(--card2); }
+    .proj .title{
+      display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
+    }
+    .proj h3{ margin: 0; font-size: 16px; }
+    .proj p{ margin: 8px 0 0; color: var(--muted); line-height: 1.45; }
+    .proj .arrow{ opacity:.75; }
+    .fade{
+      position:absolute; inset:auto -20% -70% -20%;
+      height: 140px;
+      background: radial-gradient(closest-side, rgba(124,58,237,.28), transparent 70%);
+      transform: rotate(8deg);
+      pointer-events:none;
+    }
+
+    /* Modal */
+    .modal{
+      position:fixed; inset:0;
+      display:none;
+      place-items:center;
+      padding: 18px;
+      background: rgba(0,0,0,.55);
+      z-index: 80;
+    }
+    [data-theme="light"] .modal{ background: rgba(0,0,0,.35); }
+    .modalCard{
+      width: min(760px, 96vw);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+    .modalTop{
+      display:flex; align-items:flex-start; justify-content:space-between; gap: 10px;
+      padding: 8px;
+    }
+    .close{
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor:pointer;
+      font-weight:800;
+    }
+    .close:hover{ background: var(--card); }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      color: var(--text);
+      display:none;
+      z-index: 90;
+      font-size: 13px;
+    }
+
+    /* Reveal animation */
+    .reveal{ opacity:0; transform: translateY(10px); transition: opacity .5s ease, transform .5s ease; }
+    .reveal.in{ opacity:1; transform: translateY(0); }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="wrap nav">
+      <div class="brand">
+        <span class="dot"></span>
+        <span id="brandName">YOUR NAME</span>
+        <span class="pill" id="headlinePill">Software Developer • Educator</span>
+      </div>
+
+      <div class="links">
+        <a href="#about">About</a>
+        <a href="#skills">Skills</a>
+        <a href="#experience">Experience</a>
+        <a href="#projects">Projects</a>
+        <a href="#education">Education</a>
+        <a href="#contact">Contact</a>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="themeBtn" title="Toggle theme">🌗 Theme</button>
+        <a class="btn primary" id="resumeBtn" href="#" download>⬇️ Resume (PDF)</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="grid">
+      <!-- HERO -->
+      <section class="card hero reveal" id="about">
+        <h1 id="heroName">YOUR NAME</h1>
+        <p id="heroSummary">
+          I build reliable software and love turning complex problems into simple, usable experiences.
+          I’m especially interested in full-stack apps, data-driven systems, and clean UI.
+        </p>
+
+        <div class="row">
+          <button class="btn" id="copyEmailBtn">📧 Copy Email</button>
+          <a class="btn" id="linkedinBtn" href="#" target="_blank" rel="noreferrer">in LinkedIn</a>
+          <a class="btn" id="githubBtn" href="#" target="_blank" rel="noreferrer">🐙 GitHub</a>
+          <a class="btn" id="portfolioBtn" href="#projects">✨ View Projects</a>
+        </div>
+
+        <div class="row">
+          <span class="pill" id="locationPill">📍 Boston, MA</span>
+          <span class="pill" id="workPill">✅ Open to roles</span>
+          <span class="pill" id="focusPill">🎯 Full-Stack • Java • Python</span>
+        </div>
+      </section>
+
+      <!-- QUICK INFO -->
+      <aside class="card reveal">
+        <h2 style="margin:0 0 10px;">Quick Info</h2>
+        <div class="two">
+          <div class="item">
+            <strong>Top Strength</strong>
+            <div class="meta" id="strength">Clear communication + fast iteration</div>
+          </div>
+          <div class="item">
+            <strong>Most Recent</strong>
+            <div class="meta" id="recent">Built tools for education + cloud apps</div>
+          </div>
+        </div>
+
+        <div class="section" style="margin-top:14px;">
+          <h2 style="margin:0 0 10px;">Highlights</h2>
+          <div class="kpi" id="highlights">
+            <span class="tag">5+ years teaching CS</span>
+            <span class="tag">Java & Python</span>
+            <span class="tag">AWS basics</span>
+            <span class="tag">Front-end: React</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- SKILLS -->
+    <section class="card section reveal" id="skills">
+      <h2>Skills</h2>
+      <div class="meta">Click a filter to highlight matching skills & projects.</div>
+
+      <div class="row chips" id="filters">
+        <button class="chip active" data-filter="all">All</button>
+        <button class="chip" data-filter="backend">Backend</button>
+        <button class="chip" data-filter="frontend">Frontend</button>
+        <button class="chip" data-filter="cloud">Cloud</button>
+        <button class="chip" data-filter="data">Data</button>
+      </div>
+
+      <div class="kpi" id="skillTags">
+        <!-- skills will be injected -->
+      </div>
+    </section>
+
+    <!-- EXPERIENCE -->
+    <section class="card section reveal" id="experience">
+      <h2>Experience</h2>
+
+      <div class="item" style="margin-top:12px;">
+        <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <div>
+            <strong id="job1Title">Computer Science Teacher & Department Head</strong>
+            <div class="meta" id="job1Org">Pioneer Charter School of Science II • Saugus, MA</div>
+          </div>
+          <div class="meta" id="job1Dates">Aug 2021 — Present</div>
+        </div>
+        <ul style="margin:10px 0 0; color:var(--muted); line-height:1.55;">
+          <li>Designed and delivered AP CS A / AP CSP curriculum with project-based learning.</li>
+          <li>Built small internal tools to streamline class workflows and tracking.</li>
+          <li>Mentored students through hackathons, robotics, and technical projects.</li>
+        </ul>
+        <div class="kpi">
+          <span class="tag" data-scope="backend">Java</span>
+          <span class="tag" data-scope="backend">Python</span>
+          <span class="tag" data-scope="frontend">Web</span>
+        </div>
+      </div>
+
+      <div class="item" style="margin-top:12px;">
+        <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <div>
+            <strong id="job2Title">Software / IT Projects (Side Projects)</strong>
+            <div class="meta" id="job2Org">Freelance • Personal Projects</div>
+          </div>
+          <div class="meta" id="job2Dates">2019 — Present</div>
+        </div>
+        <ul style="margin:10px 0 0; color:var(--muted); line-height:1.55;">
+          <li>Built small apps and automations for operations, tracking, and reporting.</li>
+          <li>Improved UX, performance, and reliability through iteration and testing.</li>
+        </ul>
+        <div class="kpi">
+          <span class="tag" data-scope="cloud">AWS</span>
+          <span class="tag" data-scope="data">Analytics</span>
+          <span class="tag" data-scope="frontend">UI</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section class="card section reveal" id="projects">
+      <h2>Projects</h2>
+      <div class="meta">Click a project to open details.</div>
+
+      <div class="projGrid" id="projectGrid" style="margin-top:12px;">
+        <!-- projects injected -->
+      </div>
+    </section>
+
+    <!-- EDUCATION -->
+    <section class="card section reveal" id="education">
+      <h2>Education</h2>
+      <div class="item" style="margin-top:12px;">
+        <strong id="edu1">B.S. Computer Science</strong>
+        <div class="meta" id="edu1Meta">North American University • 2014 — 2018</div>
+      </div>
+      <div class="item" style="margin-top:12px;">
+        <strong id="edu2">M.S. Information Security Management</strong>
+        <div class="meta" id="edu2Meta">Northeastern University • 2022 — 2024</div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="card section reveal" id="contact">
+      <h2>Contact</h2>
+      <div class="two" style="margin-top:12px;">
+        <div class="item">
+          <strong>Email</strong>
+          <div class="meta" id="emailText">your.email@example.com</div>
+          <div class="row">
+            <button class="btn" id="copyEmailBtn2">📋 Copy</button>
+            <a class="btn" id="mailtoBtn" href="#">✉️ Open Mail</a>
+          </div>
+        </div>
+        <div class="item">
+          <strong>Links</strong>
+          <div class="row">
+            <a class="btn" id="linkedinBtn2" href="#" target="_blank" rel="noreferrer">in LinkedIn</a>
+            <a class="btn" id="githubBtn2" href="#" target="_blank" rel="noreferrer">🐙 GitHub</a>
+          </div>
+          <div class="meta">Tip: host this on GitHub Pages or Vercel.</div>
+        </div>
+      </div>
+    </section>
+
+    <div style="height:28px;"></div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="modal">
+    <div class="modalCard">
+      <div class="modalTop">
+        <div>
+          <strong id="modalTitle" style="font-size:16px;"></strong>
+          <div class="meta" id="modalMeta"></div>
+        </div>
+        <button class="close" id="modalClose">✕</button>
+      </div>
+      <div class="item" style="margin: 8px;">
+        <div id="modalBody" style="color:var(--muted); line-height:1.55;"></div>
+        <div class="kpi" id="modalTags" style="margin-top:12px;"></div>
+        <div class="row" style="margin-top:12px;">
+          <a class="btn primary" id="modalLink" href="#" target="_blank" rel="noreferrer">🔗 View</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Copied!</div>
+
+<script>
+(() => {
+  // ====== EDIT THESE ======
+  const DATA = {
+    name: "Andi Alla",
+    headline: "Software Developer • Educator",
+    location: "Boston, MA",
+    openTo: "Open to Software Developer roles",
+    focus: "Full-Stack • Java • Python • AWS",
+    email: "andi@example.com",        // <-- change
+    linkedin: "https://linkedin.com/in/YOUR_LINK", // <-- change
+    github: "https://github.com/aalla1", // <-- change if needed
+    resumeUrl: "#", // put your PDF path like "resume.pdf" (upload it to repo root)
+    highlights: [
+      "CS Department Head",
+      "Java & Python",
+      "AWS (EC2/S3/Lambda)",
+      "React/HTML/CSS/JS"
+    ],
+    skills: [
+      { name:"Java", scope:["backend"] },
+      { name:"Python", scope:["backend","data"] },
+      { name:"JavaScript", scope:["frontend"] },
+      { name:"HTML/CSS", scope:["frontend"] },
+      { name:"React", scope:["frontend"] },
+      { name:"SQL", scope:["backend","data"] },
+      { name:"AWS (EC2/S3/Lambda)", scope:["cloud"] },
+      { name:"Git/GitHub", scope:["backend"] },
+      { name:"APIs", scope:["backend"] },
+      { name:"Data Analysis", scope:["data"] }
+    ],
+    projects: [
+      {
+        title: "Classroom Tracker Dashboard",
+        meta: "Web app • React + Firebase (example)",
+        scope: ["frontend","backend"],
+        tags: ["React","Auth","CRUD"],
+        blurb: "A lightweight dashboard to track assignments, progress, and interventions. Built for speed, clarity, and easy updates.",
+        link: "#"
+      },
+      {
+        title: "AWS File Uploader",
+        meta: "Cloud • S3 + pre-signed URLs (example)",
+        scope: ["cloud","backend"],
+        tags: ["AWS","S3","Security"],
+        blurb: "Secure upload flow using pre-signed URLs and simple server validation to keep keys off the client.",
+        link: "#"
+      },
+      {
+        title: "Data Notebook: LendingClub Risk",
+        meta: "Data • Modeling & evaluation (example)",
+        scope: ["data"],
+        tags: ["EDA","Metrics","Modeling"],
+        blurb: "Exploratory analysis and model evaluation workflow focused on fairness, calibration, and practical performance metrics.",
+        link: "#"
+      },
+      {
+        title: "Interactive Resume Site",
+        meta: "Web • Single-file build",
+        scope: ["frontend"],
+        tags: ["Vanilla JS","UX","Responsive"],
+        blurb: "This site: clean layout, filters, modal details, theme toggle, and smooth navigation.",
+        link: "#"
+      }
+    ]
+  };
+  // ========================
+
+  // Apply text
+  const setText = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  setText("brandName", DATA.name);
+  setText("headlinePill", DATA.headline);
+  setText("heroName", DATA.name);
+  setText("heroSummary", document.getElementById("heroSummary").textContent); // keep or edit manually above
+  setText("locationPill", "📍 " + DATA.location);
+  setText("workPill", "✅ " + DATA.openTo);
+  setText("focusPill", "🎯 " + DATA.focus);
+
+  const resumeBtn = document.getElementById("resumeBtn");
+  resumeBtn.href = DATA.resumeUrl;
+  if(DATA.resumeUrl === "#") resumeBtn.removeAttribute("download");
+
+  // Links
+  const linkIds = ["linkedinBtn","linkedinBtn2"]; linkIds.forEach(id => document.getElementById(id).href = DATA.linkedin);
+  const ghIds = ["githubBtn","githubBtn2"]; ghIds.forEach(id => document.getElementById(id).href = DATA.github);
+
+  // Contact
+  setText("emailText", DATA.email);
+  document.getElementById("mailtoBtn").href = "mailto:" + DATA.email;
+
+  // Highlights
+  const hl = document.getElementById("highlights");
+  hl.innerHTML = "";
+  DATA.highlights.forEach(h => {
+    const s = document.createElement("span");
+    s.className = "tag";
+    s.textContent = h;
+    hl.appendChild(s);
+  });
+
+  // Skills
+  const skillTags = document.getElementById("skillTags");
+  skillTags.innerHTML = "";
+  DATA.skills.forEach(s => {
+    const span = document.createElement("span");
+    span.className = "tag";
+    span.textContent = s.name;
+    span.dataset.scope = s.scope.join(",");
+    skillTags.appendChild(span);
+  });
+
+  // Projects
+  const projectGrid = document.getElementById("projectGrid");
+  projectGrid.innerHTML = "";
+  DATA.projects.forEach((p, idx) => {
+    const div = document.createElement("div");
+    div.className = "item proj";
+    div.dataset.scope = p.scope.join(",");
+    div.innerHTML = `
+      <div class="fade"></div>
+      <div class="title">
+        <div>
+          <h3>${p.title}</h3>
+          <div class="meta">${p.meta}</div>
+        </div>
+        <div class="arrow">↗</div>
+      </div>
+      <p>${p.blurb}</p>
+      <div class="kpi">${p.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>
+    `;
+    div.addEventListener("click", () => openModal(p));
+    projectGrid.appendChild(div);
+  });
+
+  // Modal
+  const modal = document.getElementById("modal");
+  const modalClose = document.getElementById("modalClose");
+  function openModal(p){
+    document.getElementById("modalTitle").textContent = p.title;
+    document.getElementById("modalMeta").textContent = p.meta;
+    document.getElementById("modalBody").textContent = p.blurb;
+    const tags = document.getElementById("modalTags");
+    tags.innerHTML = p.tags.map(t=>`<span class="tag">${t}</span>`).join("");
+    const link = document.getElementById("modalLink");
+    link.href = p.link || "#";
+    modal.style.display = "grid";
+  }
+  function closeModal(){ modal.style.display = "none"; }
+  modalClose.addEventListener("click", closeModal);
+  modal.addEventListener("click", (e)=>{ if(e.target === modal) closeModal(); });
+  addEventListener("keydown", (e)=>{ if(e.key === "Escape") closeModal(); });
+
+  // Filter chips
+  const chips = [...document.querySelectorAll(".chip")];
+  const tagsAll = [...document.querySelectorAll("#skillTags .tag")];
+  const projAll = [...document.querySelectorAll(".proj")];
+
+  function applyFilter(scope){
+    chips.forEach(c => c.classList.toggle("active", c.dataset.filter === scope));
+
+    // Skills highlight
+    tagsAll.forEach(t => {
+      const scopes = (t.dataset.scope || "").split(",");
+      const match = scope === "all" || scopes.includes(scope);
+      t.style.opacity = match ? "1" : ".35";
+    });
+
+    // Projects show/hide
+    projAll.forEach(p => {
+      const scopes = (p.dataset.scope || "").split(",");
+      const match = scope === "all" || scopes.includes(scope);
+      p.style.display = match ? "block" : "none";
+    });
+  }
+  document.getElementById("filters").addEventListener("click", (e)=>{
+    const btn = e.target.closest(".chip");
+    if(!btn) return;
+    applyFilter(btn.dataset.filter);
+  });
+
+  // Theme toggle (persist)
+  const themeBtn = document.getElementById("themeBtn");
+  const savedTheme = localStorage.getItem("theme");
+  if(savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+
+  themeBtn.addEventListener("click", ()=>{
+    const cur = document.documentElement.getAttribute("data-theme");
+    const next = cur === "light" ? "" : "light";
+    if(next) document.documentElement.setAttribute("data-theme", next);
+    else document.documentElement.removeAttribute("data-theme");
+    localStorage.setItem("theme", next || "");
+  });
+
+  // Copy email + toast
+  const toast = document.getElementById("toast");
+  function showToast(text){
+    toast.textContent = text;
+    toast.style.display = "block";
+    clearTimeout(showToast.t);
+    showToast.t = setTimeout(()=> toast.style.display = "none", 1400);
+  }
+  async function copyEmail(){
+    try{
+      await navigator.clipboard.writeText(DATA.email);
+      showToast("Email copied ✅");
+    } catch {
+      showToast("Copy failed (browser blocked)");
+    }
+  }
+  document.getElementById("copyEmailBtn").addEventListener("click", copyEmail);
+  document.getElementById("copyEmailBtn2").addEventListener("click", copyEmail);
+
+  // Reveal on scroll
+  const items = [...document.querySelectorAll(".reveal")];
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(en => { if(en.isIntersecting) en.target.classList.add("in"); });
+  }, { threshold: 0.08 });
+  items.forEach(i => io.observe(i));
+
+  // Default filter
+  applyFilter("all");
+})();
+</script>
+</body>
+</html>
